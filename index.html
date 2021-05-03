@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<select id="selectButton"></select>
+<style>
+body {
+  margin: auto;
+  position: relative;
+  width: 960px;
+}
+form {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+.node {
+  position: absolute;
+  text-indent: 2px;
+  border: solid 0.5px white;
+  font: 10px sans-serif;
+  line-height: 12px;
+  overflow: hidden;
+}
+</style>
+
+
+<form>
+    <label><input type="radio" name="mode" value="2015" checked> 2015</label>
+    <label><input type="radio" name="mode" value="2016"> 2016</label>
+    <label><input type="radio" name="mode" value="2017"> 2017</label>
+    <label><input type="radio" name="mode" value="2018"> 2018</label>
+    <label><input type="radio" name="mode" value="2019"> 2019</label>
+    <label><input type="radio" name="mode" value="2020"> 2020</label>
+    <label><input type="radio" name="mode" value="2021"> 2021</label>
+</form>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+///// Reference: https://observablehq.com/@d3/treemap///////////////////////////////////////////////////////
+var margin = {top: 40, right: 10, bottom: 10, left: 10}
+var width = 960 - margin.left - margin.right
+var height = 500 - margin.top - margin.bottom
+var color = d3.scaleOrdinal().range(d3.schemeCategory20c)
+var treemap = d3.treemap().size([width, height]);
+    
+var div = d3.select("body").append("div")
+            .style("position", "relative")
+            .style("width", (width + margin.left + margin.right) + "px")
+             .style("height", (height + margin.top + margin.bottom) + "px")
+             .style("left", margin.left + "px")
+             .style("top", margin.top + "px");
+d3.json("7_years_noise_complaints.json", function(error, data) {
+  if (error) throw error;
+    var allGroup = []
+   for (var e of data[0].children){
+        allGroup.push(e.name)   
+        }
+  
+   d3.ascending(allGroup)
+   var dropdown= d3.select("#selectButton")
+      .selectAll('myOptions')
+      .data(allGroup)
+      .enter()
+       .append('option')
+      .text(function (d) { return d; }) 
+      .attr("value", function (d) { return d; }) 
+   
+   
+///////////////////////initilize the treemap////////////////////////////////////////////
+   
+   var root = d3.hierarchy(data[0], (d) => d.children)
+             .sum((d) => d.size);
+ 
+    var tree = treemap(root)
+    var node = div.datum(root).selectAll(".node")
+              .data(tree.leaves())
+              .enter().append("div")
+              .attr("class", "node")
+              .style("background", function(d){if (d.parent.data.name=="Alamo Square"){return "#ff00ff" }else{return    color(d.parent.data.name) }})
+              .style("left", (d) => d.x0 + "px")
+              .style("top", (d) => d.y0 + "px")
+              .style("width", (d) => Math.max(0, d.x1 - d.x0 - 1) + "px")
+              .style("height", (d) => Math.max(0, d.y1 - d.y0  - 1) + "px")
+              .text((d) => d.parent.data.name + " : " +d.parent.data.children[0].size)
+    
+    
+    d3.selectAll("input").on("change", function change() {
+               
+            var year = d3.select(this).property("value") 
+            var selected = d3.select("#selectButton").node().value
+               
+                create_tree(data, selected, year) 
+    }) 
+    
+    d3.select("#selectButton").on("change", function(d) {
+             
+              selected= d3.select(this).property("value") 
+              year = d3.select('input[name="mode"]:checked').node().value
+              create_tree(data, selected, year) 
+      
+      })
+       
+    
+   // ////////////////////////create the treemap function/////////////////////////////////////////////////////////////
+    
+    function create_tree(data, selected, year){
+        
+             var year_list=["2015", "2016", "2017", "2018", "2019", "2020", "2021"]
+            
+             var index = year_list.findIndex(function(e){return e==year})
+        
+        
+             var newRoot = d3.hierarchy(data[index], (d) => d.children)
+                       .sum((d) => d.size)
+            node.data(treemap(newRoot).leaves())
+              .transition()
+              .duration(1000)
+              .style("left", (d) => d.x0 + "px")
+              .style("top", (d) => d.y0 + "px")
+              .style("width", (d) => Math.max(0, d.x1 - d.x0 - 1) + "px")
+              .style("height", (d) => Math.max(0, d.y1 - d.y0  - 1) + "px")
+              .text((d) => d.parent.data.name + " : " +d.parent.data.children[0].size)
+              .style("background", function(d){if (d.parent.data.name==selected){return "#ff00ff" }else{return    color(d.parent.data.name) }})
+      
+             .text(function(d){if (d.parent.data.name==selected){return "SELECTED" + " " + d.parent.data.name + " : " +d.parent.data.children[0].size}else{return d.parent.data.name + " : " +d.parent.data.children[0].size}})
+      
+             .style("opacity", function(d){if (d.parent.data.name==selected){return 2}else{return 0.6}})
+    
+    }
+     
+    
+})   
+    
+    
+</script>
