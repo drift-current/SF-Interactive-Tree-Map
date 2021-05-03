@@ -49,7 +49,7 @@ var div = d3.select("body").append("div")
              .style("height", (height + margin.top + margin.bottom) + "px")
              .style("left", margin.left + "px")
              .style("top", margin.top + "px");
-d3.json("https://raw.githubusercontent.com/drift-current/SF-Interactive-Tree-Map/main/7_years_noise_complaints.json", function(error, data) {
+d3.json("7_years_noise_complaints.json", function(error, data) {
   if (error) throw error;
     var allGroup = []
    for (var e of data[0].children){
