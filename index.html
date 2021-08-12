@@ -124,7 +124,7 @@ d3.json("7_years_noise_complaints.json", function(error, data) {
       
              .text(function(d){if (d.parent.data.name==selected){return "SELECTED" + " " + d.parent.data.name + " : " +d.parent.data.children[0].size}else{return d.parent.data.name + " : " +d.parent.data.children[0].size}})
       
-             .style("opacity", function(d){if (d.parent.data.name==selected){return 2}else{return 0.6}})
+             .style("opacity", function(d){if (d.parent.data.name==selected){return 2}else{return 2}})
     
     }
      
